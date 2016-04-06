@@ -1,0 +1,13 @@
+*.gem
+additional-config.md
+cookbooks*/
+.bundle
+.kitchen/
+.kitchen.local.yml
+vendor/bundle
+pkg/*
+.vagrant
+bin/*
+files/**/cache/
+vendor/cookbooks
+*.lock

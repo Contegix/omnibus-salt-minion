@@ -1,0 +1,10 @@
+[Unit]
+Description=The Salt Minion
+After=syslog.target network.target
+
+[Service]
+Type=simple
+ExecStart=/opt/contegix/salt/bin/salt-minion -c /opt/contegix/salt/etc/salt
+
+[Install]
+WantedBy=multi-user.target

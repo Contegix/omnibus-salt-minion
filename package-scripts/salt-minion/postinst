@@ -1,0 +1,52 @@
+#!/bin/bash
+#
+# Perform necessary salt-minion setup steps
+# after package is installed.
+#
+
+PROGNAME=$(basename $0)
+
+function error_exit
+{
+  echo "${PROGNAME}: ${1:-"Unknown Error"}" 1>&2
+  exit 1
+}
+
+service="contegix-salt-minion"
+install_dir="/opt/contegix/salt"
+if [ -f /etc/redhat-release ]; then
+  os_family="RedHat"
+  os_major_rev="$(perl -pe 's/.*release (\d+)\.\d+.*/$1/' /etc/redhat-release)"
+elif [ -f /etc/lsb-release ]; then
+  . /etc/lsb-release
+  os_family=$DISTRIB_ID
+  os_major_rev=$DISTRIB_RELEASE
+else
+  os_family="Unknown"
+fi
+
+# Install package - add services and change permissions
+# On first install, register the init scripts but disable services.
+# User should choose the services they want to run after install
+
+# link logrotate configuration
+[ -h /etc/logrotate.d/${service} ] || ln -s ${install_dir}/etc/logrotate.d/salt-minion /etc/logrotate.d/${service}
+
+# Add systemd service definitions if on EL 7
+if [ "${os_major_rev}" == "7" -a "${os_family}" == "RedHat" ]; then
+  cp -f ${install_dir}/usr/lib/systemd/system/${service}.service /usr/lib/systemd/system/${service}.service
+  systemctl daemon-reload
+  systemctl enable ${service}
+elif [ "${os_family}" == "RedHat" ]; then
+  if [ ! -e /etc/init.d/${service} ] ; then
+    ln -s ${install_dir}/etc/init.d/salt-minion /etc/init.d/${service}
+    chkconfig --add ${service}
+    chkconfig ${service} off
+  fi
+elif [ "${os_family}" == "Ubuntu" -o "${os_family}" == "Debian" ]; then
+  if [ ! -e /etc/init.d/${service} ] ; then
+    ln -s ${install_dir}/etc/init.d/salt-minion /etc/init.d/${service}
+  fi
+fi
+
+exit 0

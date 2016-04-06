@@ -1,0 +1,31 @@
+#!/bin/bash
+#
+# Perform necessary salt-minion removal steps
+# after package is uninstalled.
+#
+
+service="contegix-salt-minion"
+install_dir="/opt/contegix/salt"
+
+if [ -f /etc/redhat-release ]; then
+  os_family="RedHat"
+  os_major_rev="$(perl -pe 's/.*release (\d+)\.\d+.*/$1/' /etc/redhat-release)"
+elif [ -f /etc/lsb-release ]; then
+  . /etc/lsb-release
+  os_family=$DISTRIB_ID
+  os_major_rev=$DISTRIB_RELEASE
+else
+  os_family="Unknown"
+fi
+
+#upgrade
+if [ "${1}" -ge "2" ] ; then
+  if [ "${os_family}" == "RedHat" ]; then
+    service ${service} status && service ${service} restart
+  else
+    service="${prefix}${service}"
+    /etc/init.d/${service} status && /etc/init.d/${service} restart
+  fi
+fi
+
+exit 0

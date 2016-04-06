@@ -1,0 +1,51 @@
+#!/bin/bash
+#
+# Perform necessary salt-minion setup steps
+# prior to installing package.
+#
+
+service="contegix-salt-minion"
+install_dir="/opt/contegix/salt"
+
+if [ -f /etc/redhat-release ]; then
+  os_family="RedHat"
+  os_major_rev="$(perl -pe 's/.*release (\d+)\.\d+.*/$1/' /etc/redhat-release)"
+elif [ -f /etc/lsb-release ]; then
+  . /etc/lsb-release
+  os_family=$DISTRIB_ID
+  os_major_rev=$DISTRIB_RELEASE
+else
+  os_family="Unknown"
+fi
+
+# upgrade
+
+# uninstall
+if [ "${1}" -eq "0" ] ; then
+  # Disable and stop sensu services
+  if [ "${os_major_rev}" == "7" -a "${os_family}" == "RedHat" ] ; then
+    if [ -e /usr/lib/systemd/system/${service}.service ] ; then
+      service status ${service} 2>&1 > /dev/null && service stop ${service}
+      systemctl disable ${service}
+      rm -f /usr/lib/systemd/system/${service}
+      systemctl daemon-reload
+    fi
+  elif [ "${os_family}" == "RedHat" ]; then
+    if [ -h /etc/init.d/${service} ]; then
+      chkconfig ${service} off
+      chkconfig --del ${service}
+      /etc/init.d/${service} status 2>&1 > /dev/null && /etc/init.d/${service} stop
+      rm -f /etc/init.d/${service}
+    fi
+  elif [ "${os_family}" == "Ubuntu" -o "${os_family}" == "Debian" ]; then
+    if [ -h /etc/init.d/${service} ]; then
+      update.rc.d -f ${service} remove
+      /etc/init.d/${service} status 2>&1 > /dev/null && /etc/init.d/${service} stop
+      rm -f /etc/init.d/${service}
+    fi
+  fi
+  # unlink logroate config
+  [ -e /etc/logrotate.d/${service} ] && rm -f /etc/logrotate.d/${service}
+fi
+
+exit 0
