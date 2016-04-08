@@ -44,4 +44,5 @@
 # Load additional software
 # ------------------------------
 software_gems ['omnibus-software']
+Omnibus::Config.append_timestamp false
 # local_software_dirs ['/path/to/local/software']
