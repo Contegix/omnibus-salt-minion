@@ -39,12 +39,14 @@ if [ "${os_major_rev}" == "7" -a "${os_family}" == "RedHat" ]; then
   systemctl enable ${service}
 elif [ "${os_family}" == "RedHat" ]; then
   if [ ! -e /etc/init.d/${service} ] ; then
+    chmod +x ${install_dir}/etc/init.d/salt-minion
     ln -s ${install_dir}/etc/init.d/salt-minion /etc/init.d/${service}
     chkconfig --add ${service}
     chkconfig ${service} off
   fi
 elif [ "${os_family}" == "Ubuntu" -o "${os_family}" == "Debian" ]; then
   if [ ! -e /etc/init.d/${service} ] ; then
+    chmod +x ${install_dir}/etc/init.d/salt-minion
     ln -s ${install_dir}/etc/init.d/salt-minion /etc/init.d/${service}
   fi
 fi
