@@ -13,7 +13,7 @@ homepage "https://github.com/contegix/omnibus-salt-minion"
 install_dir "/opt/contegix/salt"
 
 build_version '2015.8.7'
-build_iteration 2
+build_iteration 3
 
 # Creates required build directories
 #dependency "preparation"

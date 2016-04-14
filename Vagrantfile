@@ -18,11 +18,14 @@ Vagrant.configure("2") do |config|
   config.vm.define 'centos-5.11_64' do |c|
     c.berkshelf.berksfile_path = "./Berksfile"
     c.vm.box = "bento/centos-5.11"
+    c.vm.provision "init", type: "shell", preserve_order: true, inline: "wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-5.noarch.rpm && sudo rpm -Uvh epel-release-latest-5.noarch.rpm; true"
   end
 
   config.vm.define 'centos-5.11_32' do |c|
     c.berkshelf.berksfile_path = "./Berksfile"
     c.vm.box = "bento/centos-5.11-i386"
+    # Ensure that EPEL is installed for git
+    c.vm.provision "init", type: "shell", preserve_order: true, inline: "wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-5.noarch.rpm && sudo rpm -Uvh epel-release-latest-5.noarch.rpm; true"
   end
 
   config.vm.define 'centos-6.7_64' do |c|
@@ -38,6 +41,8 @@ Vagrant.configure("2") do |config|
   config.vm.define 'centos-7.1_64' do |c|
     c.berkshelf.berksfile_path = "./Berksfile"
     c.vm.box = "bento/centos-7.1"
+    # Install fakeroot for el7 from EPEL
+    c.vm.provision "init", type: "shell", preserve_order: true, inline: "sudo rpm -Uvh https://dl.fedoraproject.org/pub/epel/epel-release-latest-5.noarch.rpm && sudo yum install -y fakeroot; true"
   end
 
   config.vm.define 'ubuntu-14.04_64' do |c|
@@ -75,8 +80,6 @@ Vagrant.configure("2") do |config|
   # The path to the Berksfile to use with Vagrant Berkshelf
   config.berkshelf.berksfile_path = "./Berksfile"
 
-#  config.ssh.max_tries = 40
-#  config.ssh.timeout   = 120
   config.ssh.forward_agent = true
 
   host_project_path = File.expand_path("..", __FILE__)
@@ -84,9 +87,11 @@ Vagrant.configure("2") do |config|
 
   config.vm.synced_folder host_project_path, guest_project_path
 
+  config.vm.provision "init", type: "shell", inline: "echo 'No init tasks. Continuing.'"
+
   # prepare VM to be an Omnibus builder
   config.vm.provision :chef_solo do |chef|
-    chef.version = "12.8.1"
+    # chef.version = "12.8.3"
 
     chef.json = {
       "omnibus" => {
@@ -101,7 +106,6 @@ Vagrant.configure("2") do |config|
     ]
   end
 
-    #su vagrant -c ". /home/vagrant/.bash_profile; bundle install --binstubs"
   config.vm.provision :shell, :inline => <<-OMNIBUS_BUILD
     export PATH=/usr/local/bin:$PATH
     cd #{guest_project_path}
