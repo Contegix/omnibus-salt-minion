@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 #
 # Salt minion
 ###################################
@@ -29,7 +29,7 @@ DEBIAN_VERSION=/etc/debian_version
 SUSE_RELEASE=/etc/SuSE-release
 # Source function library.
 if [ -f $DEBIAN_VERSION ]; then
-   break
+    true
 elif [ -f $SUSE_RELEASE -a -r /etc/rc.status ]; then
     . /etc/rc.status
 else
@@ -41,6 +41,7 @@ install_dir="/opt/contegix/salt"
 SALTMINION="${install_dir}/bin/salt-minion"
 PYTHON="${install_dir}/embedded/bin/python2.7"
 MINION_ARGS="-c /opt/contegix/salt/etc/salt"
+LOCKFILE="/var/run/contegix-salt-minion.lock"
 
 if [ -f /etc/default/contegix-salt ]; then
     . /etc/default/contegix-salt
@@ -52,15 +53,16 @@ PROCESS=salt-minion
 RETVAL=0
 
 start() {
-    echo -n $"Starting salt-minion daemon: "
+    echo -n "Starting salt-minion daemon: "
     if [ -f $SUSE_RELEASE ]; then
         startproc -f -p ${install_dir}/var/run/$SERVICE.pid $SALTMINION -d $MINION_ARGS
         rc_status -v
     elif [ -e $DEBIAN_VERSION ]; then
         if [ -f $LOCKFILE ]; then
-            echo -n "already started, lock file found"
+            echo -n "already started, lock file $LOCKFILE found"
             RETVAL=1
         elif $PYTHON $SALTMINION -d $MINION_ARGS >& /dev/null; then
+            touch $LOCKFILE
             echo -n "OK"
             RETVAL=0
         fi
@@ -86,9 +88,11 @@ stop() {
     elif [ -f $DEBIAN_VERSION ]; then
         # Added this since Debian's start-stop-daemon doesn't support spawned processes
         if ps -ef | grep "$PYTHON $SALTMINION" | grep -v grep | awk '{print $2}' | xargs kill &> /dev/null; then
+            rm $LOCKFILE
             echo -n "OK"
             RETVAL=0
         else
+            rm $LOCKFILE 2>/dev/null
             echo -n "Daemon is not started"
             RETVAL=1
         fi
@@ -119,6 +123,7 @@ case "$1" in
                 RETVAL=0
                 echo "salt-minion is running."
             else
+                rm $LOCKFILE 2>/dev/null
                 RETVAL=1
                 echo "salt-minion is stopped."
             fi
