@@ -93,6 +93,8 @@ Vagrant.configure("2") do |config|
   config.vm.provision :chef_solo do |chef|
     # chef.version = "12.8.3"
 
+    chef.cookbooks_path = "cookbooks"
+
     chef.json = {
       "omnibus" => {
         "build_user" => "vagrant",
