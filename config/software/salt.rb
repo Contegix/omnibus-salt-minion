@@ -1,6 +1,6 @@
 name "salt"
-version "2015.8.7"
-default_version "2015.8.7"
+version "2015.8.10"
+default_version "2015.8.10"
 
 dependency "python"
 dependency "pip"
@@ -12,6 +12,6 @@ build do
   command "#{install_dir}/embedded/bin/pip install --build #{project_dir} #{name}==#{version}"
   command "mkdir #{install_dir}/bin"
   command "ln -s #{install_dir}/embedded/bin/salt-minion #{install_dir}/bin/salt-minion"
+  command "ln -s #{install_dir}/embedded/bin/salt-minion #{install_dir}/bin/contegix-salt"
   command "rsync -a #{Omnibus::Config.project_root}/files/ #{install_dir}/
-  #sync "#{Omnibus::Config.project_root}/files", "#{install_dir}"
 end

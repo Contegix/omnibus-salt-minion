@@ -38,7 +38,7 @@ fi
 
 # Default values (can be overridden below)
 install_dir="/opt/contegix/salt"
-SALTMINION="${install_dir}/bin/salt-minion"
+SALTMINION="${install_dir}/bin/contegix-salt"
 PYTHON="${install_dir}/embedded/bin/python2.7"
 MINION_ARGS="-c /opt/contegix/salt/etc/salt"
 LOCKFILE="/var/run/contegix-salt-minion.lock"
@@ -47,13 +47,13 @@ if [ -f /etc/default/contegix-salt ]; then
     . /etc/default/contegix-salt
 fi
 
-SERVICE=salt-minion
-PROCESS=salt-minion
+SERVICE=contegix-salt
+PROCESS=contegix-salt
 
 RETVAL=0
 
 start() {
-    echo -n "Starting salt-minion daemon: "
+    echo -n "Starting contegix-salt daemon: "
     if [ -f $SUSE_RELEASE ]; then
         startproc -f -p ${install_dir}/var/run/$SERVICE.pid $SALTMINION -d $MINION_ARGS
         rc_status -v
@@ -80,7 +80,7 @@ start() {
 }
 
 stop() {
-    echo -n $"Stopping salt-minion daemon: "
+    echo -n $"Stopping contegix-salt daemon: "
     if [ -f $SUSE_RELEASE ]; then
         killproc -TERM $SALTMINION
         rc_status -v
@@ -115,17 +115,17 @@ case "$1" in
         ;;
     status)
         if [ -f $SUSE_RELEASE ]; then
-            echo -n "Checking for service salt-minion "
+            echo -n "Checking for service contegix-salt "
             checkproc $SALTMINION
             rc_status -v
         elif [ -f $DEBIAN_VERSION ]; then
             if [ -f $LOCKFILE ]; then
                 RETVAL=0
-                echo "salt-minion is running."
+                echo "contegix-salt is running."
             else
                 rm $LOCKFILE 2>/dev/null
                 RETVAL=1
-                echo "salt-minion is stopped."
+                echo "contegix-salt is stopped."
             fi
         else
             status $PROCESS

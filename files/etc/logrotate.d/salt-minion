@@ -6,7 +6,4 @@
     sharedscripts
     copytruncate
     compress
-    postrotate
-        kill -USR2 `cat /opt/contegix/salt/var/run/salt-minion.pid 2> /dev/null` 2> /dev/null || true
-    endscript
 }

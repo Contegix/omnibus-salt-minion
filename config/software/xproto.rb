@@ -25,7 +25,9 @@ version "7.0.25" do
   source md5: "a47db46cb117805bd6947aa5928a7436"
 end
 
-source url: "http://xorg.freedesktop.org/releases/individual/proto/xproto-#{version}.tar.gz"
+
+#source url: "http://xorg.freedesktop.org/releases/individual/proto/xproto-#{version}.tar.gz"
+source url: "http://mirrorservice.org/sites/ftp.x.org/pub/individual/proto/xproto-#{version}.tar.gz"
 
 license "MIT"
 license_file "COPYING"
